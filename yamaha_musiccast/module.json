@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "yamaha_musiccast",
+  "name": "Yamaha MusicCast",
+  "version": "0.1.1",
+  "target": "esp32s3",
+  "abiMajor": 1,
+  "abiMinor": 2,
+  "artifact": "yamaha_musiccast.so",
+  "entrySymbol": "klangwehr_plugin_entry",
+  "publish": true,
+  "releaseNotes": "Yamaha MusicCast control as an independently installable native plugin"
+}

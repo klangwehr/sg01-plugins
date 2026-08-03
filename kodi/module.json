@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "kodi",
+  "name": "Kodi",
+  "version": "0.1.1",
+  "target": "esp32s3",
+  "abiMajor": 1,
+  "abiMinor": 2,
+  "artifact": "kodi.so",
+  "entrySymbol": "klangwehr_plugin_entry",
+  "publish": true,
+  "releaseNotes": "Kodi JSON-RPC integration as an independently installable native plugin"
+}

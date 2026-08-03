@@ -1,0 +1,123 @@
+name: Plugin CI
+
+on:
+  pull_request:
+    branches: [main, staging]
+  push:
+    branches: [main, staging]
+
+permissions:
+  contents: read
+
+jobs:
+  version-contract:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Enforce immutable plugin versions
+        run: python tools/check_plugin_versions.py --base-ref "origin/${{ github.base_ref }}"
+
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.modules.outputs.modules }}
+      full_rebuild: ${{ steps.modules.outputs.full_rebuild }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Select changed plugin modules
+        id: modules
+        shell: bash
+        env:
+          BASE_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
+        run: |
+          set -euo pipefail
+          if [ -z "$BASE_REF" ] || [ "$BASE_REF" = "0000000000000000000000000000000000000000" ]; then
+            # First publication has no predecessor: validate every module.
+            BASE_REF="$(git hash-object -t tree /dev/null)"
+          fi
+          selection=$(python tools/changed_modules.py --base-ref "$BASE_REF")
+          echo "modules=$(python -c 'import json,sys; print(json.load(sys.stdin)["modules"])' <<< "$selection")" >> "$GITHUB_OUTPUT"
+          echo "full_rebuild=$(python -c 'import json,sys; print(str(json.load(sys.stdin)["fullRebuild"]).lower())' <<< "$selection")" >> "$GITHUB_OUTPUT"
+
+  module-build:
+    needs: [discover, version-contract]
+    if: always() && needs.discover.result == 'success' && needs.discover.outputs.modules != '[]' && (needs.version-contract.result == 'success' || needs.version-contract.result == 'skipped')
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        module: ${{ fromJSON(needs.discover.outputs.modules) }}
+    runs-on: ubuntu-latest
+    container:
+      image: espressif/idf:v6.0.2
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build and validate ${{ matrix.module }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          . "$IDF_PATH/export.sh"
+          module="${{ matrix.module }}"
+          (
+            cd "$module"
+            idf.py -B build-ci -G "Unix Makefiles" set-target esp32s3
+            idf.py -B build-ci -G "Unix Makefiles" so
+          )
+          python sdk/tools/plugin_release.py validate \
+            --module "$module/module.json" \
+            --elf "$module/build-ci/$module.so"
+
+      - name: Upload unsigned compatibility artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-${{ matrix.module }}-${{ github.sha }}
+          path: |
+            ${{ matrix.module }}/module.json
+            ${{ matrix.module }}/build-ci/${{ matrix.module }}.so
+          if-no-files-found: error
+
+  request-official-publication:
+    needs: [discover, module-build]
+    if: >-
+      always() && github.event_name == 'push' &&
+      needs.discover.result == 'success' &&
+      needs.discover.outputs.modules != '[]' &&
+      needs.module-build.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      GH_TOKEN: ${{ secrets.CORE_DISPATCH_TOKEN }}
+      MODULES: ${{ needs.discover.outputs.modules }}
+    steps:
+      - name: Request the protected catalog publisher
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$GH_TOKEN" ]; then
+            echo "CORE_DISPATCH_TOKEN is not configured; skipping catalog publication request."
+            exit 0
+          fi
+          case "$GITHUB_REF_NAME" in
+            staging) channel=rc ;;
+            main) channel=stable ;;
+            *) echo "Unsupported release branch: $GITHUB_REF_NAME" >&2; exit 1 ;;
+          esac
+          payload=$(jq -nc --arg event_type official-plugin-release \
+            --arg ref "$GITHUB_SHA" --arg channel "$channel" \
+            --arg modules_json "$MODULES" \
+            '{event_type:$event_type,client_payload:{ref:$ref,channel:$channel,modulesJson:$modules_json}}')
+          printf '%s' "$payload" | gh api --method POST repos/klangwehr/sg01-core/dispatches --input -

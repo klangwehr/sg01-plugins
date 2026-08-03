@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "epson_projector",
+  "name": "Epson Projector",
+  "version": "0.1.1",
+  "target": "esp32s3",
+  "abiMajor": 1,
+  "abiMinor": 3,
+  "artifact": "epson_projector.so",
+  "entrySymbol": "klangwehr_plugin_entry",
+  "publish": true,
+  "releaseNotes": "Epson ESC/VP21 control as an independently installable native plugin"
+}

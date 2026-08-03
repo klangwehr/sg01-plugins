@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "shelly",
+  "name": "Shelly",
+  "version": "0.1.1",
+  "target": "esp32s3",
+  "abiMajor": 1,
+  "abiMinor": 2,
+  "artifact": "shelly.so",
+  "entrySymbol": "klangwehr_plugin_entry",
+  "publish": true,
+  "releaseNotes": "Shelly Gen1 and Gen2 integration as an independently installable native plugin"
+}

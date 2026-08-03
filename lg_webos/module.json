@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "lg_webos",
+  "name": "LG webOS",
+  "version": "0.1.1",
+  "target": "esp32s3",
+  "abiMajor": 1,
+  "abiMinor": 3,
+  "artifact": "lg_webos.so",
+  "entrySymbol": "klangwehr_plugin_entry",
+  "publish": true,
+  "releaseNotes": "LG webOS pairing and WebSocket remote control as an independently installable native plugin"
+}

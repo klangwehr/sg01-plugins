@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "hello_world",
+  "name": "Hello World",
+  "version": "0.1.0",
+  "target": "esp32s3",
+  "abiMajor": 1,
+  "abiMinor": 2,
+  "artifact": "hello_world.so",
+  "entrySymbol": "klangwehr_plugin_entry",
+  "releaseNotes": "ABI smoke-test module",
+  "publish": false
+}

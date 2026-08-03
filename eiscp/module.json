@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "eiscp",
+  "name": "Onkyo / Integra eISCP",
+  "version": "0.1.1",
+  "target": "esp32s3",
+  "abiMajor": 1,
+  "abiMinor": 3,
+  "artifact": "eiscp.so",
+  "entrySymbol": "klangwehr_plugin_entry",
+  "publish": true,
+  "releaseNotes": "Onkyo and Integra eISCP control as an independently installable native plugin"
+}
