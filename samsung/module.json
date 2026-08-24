@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "id": "samsung",
   "name": "Samsung TV Network",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "target": "esp32s3",
   "abiMajor": 1,
-  "abiMinor": 3,
+  "abiMinor": 4,
   "artifact": "samsung.so",
   "entrySymbol": "klangwehr_plugin_entry",
   "publish": true,
-  "releaseNotes": "Samsung Tizen WebSocket remote control as an independently installable native plugin"
+  "releaseNotes": "Samsung Tizen WebSocket remote control as an independently installable native plugin; adds shared automatic target discovery"
 }

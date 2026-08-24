@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "id": "pjlink",
   "name": "PJLink",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "target": "esp32s3",
   "abiMajor": 1,
-  "abiMinor": 3,
+  "abiMinor": 4,
   "artifact": "pjlink.so",
   "entrySymbol": "klangwehr_plugin_entry",
   "publish": true,
-  "releaseNotes": "PJLink Class 1/2 control with challenge authentication as an independently installable native plugin"
+  "releaseNotes": "PJLink Class 1/2 control with challenge authentication as an independently installable native plugin; adds shared automatic target discovery"
 }

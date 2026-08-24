@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "id": "denon_avr",
   "name": "Denon / Marantz AVR",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "target": "esp32s3",
   "abiMajor": 1,
-  "abiMinor": 3,
+  "abiMinor": 4,
   "artifact": "denon_avr.so",
   "entrySymbol": "klangwehr_plugin_entry",
   "publish": true,
-  "releaseNotes": "Denon and Marantz AVR TCP control as an independently installable native plugin"
+  "releaseNotes": "Denon and Marantz AVR TCP control as an independently installable native plugin; adds shared automatic target discovery"
 }

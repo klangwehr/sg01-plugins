@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "id": "spotify",
   "name": "Spotify",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "target": "esp32s3",
   "abiMajor": 1,
-  "abiMinor": 2,
+  "abiMinor": 4,
   "artifact": "spotify.so",
   "entrySymbol": "klangwehr_plugin_entry",
   "publish": true,
-  "releaseNotes": "Spotify Web API playback control and token refresh as an independently installable native plugin"
+  "releaseNotes": "Spotify Web API playback control and token refresh as an independently installable native plugin; adds shared automatic target discovery"
 }

@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "id": "sonos",
   "name": "Sonos",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "target": "esp32s3",
   "abiMajor": 1,
-  "abiMinor": 2,
+  "abiMinor": 4,
   "artifact": "sonos.so",
   "entrySymbol": "klangwehr_plugin_entry",
   "publish": true,
-  "releaseNotes": "Sonos Control API integration as an independently installable native plugin"
+  "releaseNotes": "Sonos Control API integration as an independently installable native plugin; adds shared automatic target discovery"
 }
