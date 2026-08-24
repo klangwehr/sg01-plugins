@@ -267,10 +267,10 @@ static const kw_plugin_descriptor_v1_t s_descriptor = {
     .magic = KW_PLUGIN_ABI_MAGIC,
     .struct_size = sizeof(kw_plugin_descriptor_v1_t),
     .required_abi_major = 1u,
-    .required_abi_minor = 3u,
+    .required_abi_minor = 4u,
     .id = PLUGIN_ID,
     .display_name = "Onkyo / Integra eISCP",
-    .version = "0.1.1",
+    .version = "0.1.2",
     .tier = KW_PLUGIN_TIER_PREVIEW,
     .bind = bind_host,
     .initialize = initialize,
@@ -285,6 +285,7 @@ static const kw_plugin_descriptor_v1_t s_descriptor = {
     .action_count = sizeof(s_actions) / sizeof(s_actions[0]),
     .settings = s_settings,
     .setting_count = sizeof(s_settings) / sizeof(s_settings[0]),
+    .discovery_profile = "eiscp",
 };
 
 const kw_plugin_descriptor_v1_t *klangwehr_plugin_entry(void)

@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "id": "home_assistant",
   "name": "Home Assistant",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "target": "esp32s3",
   "abiMajor": 1,
-  "abiMinor": 2,
+  "abiMinor": 4,
   "artifact": "home_assistant.so",
   "entrySymbol": "klangwehr_plugin_entry",
   "publish": true,
-  "releaseNotes": "Home Assistant REST integration as an independently installable native plugin"
+  "releaseNotes": "Home Assistant REST integration as an independently installable native plugin; adds shared automatic target discovery"
 }
