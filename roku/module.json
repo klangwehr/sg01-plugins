@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "id": "roku",
   "name": "Roku",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "target": "esp32s3",
   "abiMajor": 1,
-  "abiMinor": 2,
+  "abiMinor": 4,
   "artifact": "roku.so",
   "entrySymbol": "klangwehr_plugin_entry",
-  "releaseNotes": "Roku ECP integration as an independently installable native plugin"
+  "releaseNotes": "Roku ECP integration as an independently installable native plugin; adds shared automatic target discovery"
 }
