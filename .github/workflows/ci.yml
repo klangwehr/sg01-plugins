@@ -133,8 +133,9 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "$GH_TOKEN" ]; then
-            echo "CORE_DISPATCH_TOKEN is not configured; skipping catalog publication request."
-            exit 0
+            echo "CORE_DISPATCH_TOKEN is not configured; refusing to skip catalog publication." >&2
+            echo "Configure a repository-dispatch token with access to klangwehr/sg01-core." >&2
+            exit 1
           fi
           case "$GITHUB_REF_NAME" in
             staging) channel=rc ;;
