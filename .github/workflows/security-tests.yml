@@ -1,0 +1,35 @@
+name: Plugin transport security
+
+on:
+  pull_request:
+  push:
+    branches: [main, staging]
+
+permissions:
+  contents: read
+
+jobs:
+  transport-regressions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+      - name: Check out public SDK
+        run: |
+          git config --global --add safe.directory "$PWD"
+          git config --global --unset-all http.https://github.com/.extraheader || true
+          git config --local --unset-all http.https://github.com/.extraheader || true
+          git submodule sync --recursive
+          git submodule update --init --force --recursive
+      - name: Run real module transport regressions under UBSan
+        run: |
+          set -euo pipefail
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined \
+            -fno-sanitize-recover=undefined tests/test_sonos_authority.c \
+            sonos/main/sonos.c -o /tmp/test_sonos_authority
+          /tmp/test_sonos_authority
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined \
+            -fno-sanitize-recover=undefined tests/test_samsung_transport.c \
+            samsung/main/samsung.c -o /tmp/test_samsung_transport
+          /tmp/test_samsung_transport

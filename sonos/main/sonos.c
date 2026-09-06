@@ -3,6 +3,7 @@
 #include "../../sdk/include/kw_module_helpers.h"
 
 #define PLUGIN_ID "sonos"
+#define SONOS_API_HOST "api.ws.sonos.com"
 
 static const kw_plugin_host_api_v1_t *s_host;
 static uint8_t s_started;
@@ -22,7 +23,7 @@ static const kw_plugin_action_descriptor_v1_t s_actions[] = {
 static const kw_plugin_setting_descriptor_v1_t s_settings[] = {
     {
         .key = "host",
-        .label = "Sonos API hostname",
+        .label = "Sonos API hostname (api.ws.sonos.com)",
         .type = KW_PLUGIN_SETTING_STRING,
         .default_string = "api.ws.sonos.com",
         .maximum_length = 95,
@@ -32,8 +33,8 @@ static const kw_plugin_setting_descriptor_v1_t s_settings[] = {
         .label = "HTTPS port",
         .type = KW_PLUGIN_SETTING_U32,
         .default_u32 = 443,
-        .minimum_u32 = 1,
-        .maximum_u32 = 65535,
+        .minimum_u32 = 443,
+        .maximum_u32 = 443,
     },
     {
         .key = "access_token",
@@ -93,9 +94,11 @@ static kw_plugin_status_t load_config(char host[96],
     kw_plugin_status_t result =
         kw_setting_string(s_host, PLUGIN_ID, "host", host, 96, 0);
     if (result != KW_PLUGIN_STATUS_OK) return result;
-    if (!host[0]) kw_copy(host, 96, "api.ws.sonos.com");
+    if (!host[0]) kw_copy(host, 96, SONOS_API_HOST);
+    /* Reject changed authority before reading the retained bearer token. */
+    if (!kw_string_equal(host, SONOS_API_HOST)) return KW_PLUGIN_STATUS_NOT_CONFIGURED;
     result = kw_setting_u32(
-        s_host, PLUGIN_ID, "port", 443, 1, 65535, port);
+        s_host, PLUGIN_ID, "port", 443, 443, 443, port);
     if (result != KW_PLUGIN_STATUS_OK) return result;
     result = kw_setting_string(
         s_host, PLUGIN_ID, "access_token", token, 1025, 1);
@@ -228,8 +231,8 @@ static kw_plugin_status_t execute_action(const char *action)
     kw_http_request_init(&request);
     request.method = KW_PLUGIN_HTTP_POST;
     request.use_tls = 1;
-    request.host = host;
-    request.port = (uint16_t)port;
+    request.host = SONOS_API_HOST;
+    request.port = 443;
     request.path = path;
     request.content_type = "application/json";
     request.body = body;
@@ -254,7 +257,7 @@ static const kw_plugin_descriptor_v1_t s_descriptor = {
     .required_abi_minor = 4u,
     .id = PLUGIN_ID,
     .display_name = "Sonos",
-    .version = "0.1.2",
+    .version = "0.1.3",
     .tier = KW_PLUGIN_TIER_PREVIEW,
     .bind = bind_host,
     .initialize = initialize,

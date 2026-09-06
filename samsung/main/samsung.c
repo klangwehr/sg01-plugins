@@ -135,7 +135,7 @@ static const kw_plugin_setting_descriptor_v1_t s_settings[] = {
         .key = "scheme",
         .label = "Transport (auto, ws, or wss)",
         .type = KW_PLUGIN_SETTING_STRING,
-        .default_string = "auto",
+        .default_string = "wss",
         .maximum_length = 4,
     },
     {
@@ -155,9 +155,9 @@ static const kw_plugin_setting_descriptor_v1_t s_settings[] = {
     },
     {
         .key = "tls_skip",
-        .label = "Allow self-signed TV certificate",
+        .label = "Skip certificate name check (tokenless only)",
         .type = KW_PLUGIN_SETTING_BOOL,
-        .default_u32 = 1,
+        .default_u32 = 0,
         .minimum_u32 = 0,
         .maximum_u32 = 1,
     },
@@ -229,7 +229,7 @@ static kw_plugin_status_t target(char host[64],
     result = kw_setting_string(
         s_host, PLUGIN_ID, "scheme", scheme, 5, 0);
     if (result != KW_PLUGIN_STATUS_OK) return result;
-    if (!scheme[0]) kw_copy(scheme, 5, "auto");
+    if (!scheme[0]) kw_copy(scheme, 5, "wss");
     if (!kw_string_equal(scheme, "auto") &&
         !kw_string_equal(scheme, "ws") &&
         !kw_string_equal(scheme, "wss")) {
@@ -242,8 +242,13 @@ static kw_plugin_status_t target(char host[64],
     result =
         kw_setting_string(s_host, PLUGIN_ID, "token", token, 128, 0);
     if (result != KW_PLUGIN_STATUS_OK) return result;
-    return kw_setting_u32(
-        s_host, PLUGIN_ID, "tls_skip", 1, 0, 1, tls_skip);
+    result = kw_setting_u32(
+        s_host, PLUGIN_ID, "tls_skip", 0, 0, 1, tls_skip);
+    if (result != KW_PLUGIN_STATUS_OK) return result;
+    if (token[0] && (*tls_skip || kw_string_equal(scheme, "ws"))) {
+        return KW_PLUGIN_STATUS_NOT_CONFIGURED;
+    }
+    return KW_PLUGIN_STATUS_OK;
 }
 
 static uint8_t build_url(char *url,
@@ -372,7 +377,7 @@ static kw_plugin_status_t execute_action(const char *action)
         result = exchange(1, host, port, device_name, token, tls_skip,
                           frame, handshake, sizeof(handshake));
     }
-    if ((result != KW_PLUGIN_STATUS_OK &&
+    if ((result != KW_PLUGIN_STATUS_OK && !token[0] &&
          kw_string_equal(scheme, "auto")) ||
         kw_string_equal(scheme, "ws")) {
         result = exchange(0, host, port, device_name, token, tls_skip,
@@ -411,7 +416,7 @@ static const kw_plugin_descriptor_v1_t s_descriptor = {
     .required_abi_minor = 4u,
     .id = PLUGIN_ID,
     .display_name = "Samsung TV Network",
-    .version = "0.1.2",
+    .version = "0.1.3",
     .tier = KW_PLUGIN_TIER_PREVIEW,
     .bind = bind_host,
     .initialize = initialize,
