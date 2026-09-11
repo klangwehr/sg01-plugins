@@ -374,9 +374,7 @@ static kw_plugin_status_t execute_preset(const char *action)
         return KW_PLUGIN_STATUS_UNSUPPORTED;
     memcpy(path, "/Preset?id=", prefix_length);
     memcpy(path + prefix_length, id, id_length + 1);
-    kw_plugin_status_t result = request_path(path, NULL, 0, NULL);
-    return result == KW_PLUGIN_STATUS_OK
-        ? request_path("/Play", NULL, 0, NULL) : result;
+    return request_path(path, NULL, 0, NULL);
 }
 
 static kw_plugin_status_t bind_host(const kw_plugin_host_api_v1_t *host)
@@ -532,7 +530,7 @@ static const kw_plugin_descriptor_v1_t s_descriptor = {
     .struct_size = sizeof(kw_plugin_descriptor_v1_t),
     .required_abi_major = KW_PLUGIN_ABI_MAJOR,
     .required_abi_minor = 4u,
-    .id = PLUGIN_ID, .display_name = "BluOS", .version = "0.1.3",
+    .id = PLUGIN_ID, .display_name = "BluOS", .version = "0.1.4",
     .tier = KW_PLUGIN_TIER_PREVIEW,
     .bind = bind_host, .initialize = initialize, .start = start,
     .stop = stop, .deinitialize = deinitialize,
