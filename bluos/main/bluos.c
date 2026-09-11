@@ -249,6 +249,20 @@ static uint8_t append_action(json_writer_t *writer, const char *name,
     return append_char(writer, '}');
 }
 
+static uint8_t append_service(json_writer_t *writer, const char *key,
+                              const char *label, const char *kind)
+{
+    if (!writer->first && !append_char(writer, ',')) return 0;
+    writer->first = 0;
+    if (!append_text(writer, "{\"key\":")) return 0;
+    if (!append_json_string(writer, key)) return 0;
+    if (!append_text(writer, ",\"label\":")) return 0;
+    if (!append_json_string(writer, label)) return 0;
+    if (!append_text(writer, ",\"kind\":")) return 0;
+    if (!append_json_string(writer, kind)) return 0;
+    return append_char(writer, '}');
+}
+
 static uint8_t action_token(const char *prefix, const char *id,
                             char *output, size_t output_size)
 {
@@ -374,9 +388,7 @@ static kw_plugin_status_t execute_preset(const char *action)
         return KW_PLUGIN_STATUS_UNSUPPORTED;
     memcpy(path, "/Preset?id=", prefix_length);
     memcpy(path + prefix_length, id, id_length + 1);
-    kw_plugin_status_t result = request_path(path, NULL, 0, NULL);
-    return result == KW_PLUGIN_STATUS_OK
-        ? request_path("/Play", NULL, 0, NULL) : result;
+    return request_path(path, NULL, 0, NULL);
 }
 
 static kw_plugin_status_t bind_host(const kw_plugin_host_api_v1_t *host)
@@ -471,6 +483,29 @@ static void append_presets(json_writer_t *writer, const char *xml)
     }
 }
 
+static uint8_t append_services(json_writer_t *writer, const char *xml)
+{
+    const char *browse_end = NULL;
+    if (!next_element(xml, "browse", &browse_end)) return 0;
+    const char *cursor = xml;
+    char key[512], label[160], type[32];
+    while ((cursor = next_element(cursor, "item", NULL)) != NULL) {
+        const char *end = find_char(cursor, '>');
+        if (!end) return 0;
+        key[0] = label[0] = type[0] = '\0';
+        attribute(cursor, end, "browseKey", key, sizeof(key));
+        attribute(cursor, end, "text", label, sizeof(label));
+        attribute(cursor, end, "type", type, sizeof(type));
+        if (key[0] && label[0] && kw_string_equal(type, "link")) {
+            const char *kind = kw_string_equal(key, "BluOS:")
+                ? "collection" : "service";
+            if (!append_service(writer, key, label, kind)) return 0;
+        }
+        cursor = end + 1;
+    }
+    return 1;
+}
+
 static uint8_t refresh_status(void)
 {
     char *response = s_host->alloc(RESPONSE_MAX);
@@ -497,6 +532,26 @@ static uint8_t refresh_status(void)
         KW_PLUGIN_STATUS_OK)
         append_presets(&writer, response);
     append_char(&writer, ']');
+    append_text(&writer, ",\"services\":[");
+    size_t services_start = writer.length;
+    uint8_t services_prefix_valid = writer.valid;
+    writer.first = 1;
+    length = 0;
+    uint8_t services_valid =
+        request_path("/Browse", response, RESPONSE_MAX, &length) ==
+            KW_PLUGIN_STATUS_OK &&
+        append_services(&writer, response);
+    if (services_prefix_valid && (!services_valid || !writer.valid)) {
+        writer.length = services_start;
+        writer.data[writer.length] = '\0';
+        writer.first = 1;
+        writer.valid = 1;
+        services_valid = 0;
+    }
+    append_char(&writer, ']');
+    if (!services_valid)
+        append_text(&writer,
+                    ",\"capabilities_warning\":\"Player services could not be loaded\"");
     length = 0;
     if (request_path("/SyncStatus", response, RESPONSE_MAX, &length) ==
         KW_PLUGIN_STATUS_OK)
@@ -532,7 +587,7 @@ static const kw_plugin_descriptor_v1_t s_descriptor = {
     .struct_size = sizeof(kw_plugin_descriptor_v1_t),
     .required_abi_major = KW_PLUGIN_ABI_MAJOR,
     .required_abi_minor = 4u,
-    .id = PLUGIN_ID, .display_name = "BluOS", .version = "0.1.3",
+    .id = PLUGIN_ID, .display_name = "BluOS", .version = "0.1.5",
     .tier = KW_PLUGIN_TIER_PREVIEW,
     .bind = bind_host, .initialize = initialize, .start = start,
     .stop = stop, .deinitialize = deinitialize,
