@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "id": "bluos",
   "name": "BluOS",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "target": "esp32s3",
   "abiMajor": 1,
   "abiMinor": 4,
   "artifact": "bluos.so",
   "entrySymbol": "klangwehr_plugin_entry",
   "publish": true,
-  "releaseNotes": "Starts player presets with one atomic preset command, avoiding a follow-up Play race with asynchronous Spotify loading"
+  "releaseNotes": "Discovers every player-advertised top-level BluOS service and collection separately from executable inputs and presets"
 }
