@@ -61,7 +61,7 @@ jobs:
             BASE_REF="$(git hash-object -t tree /dev/null)"
           fi
           selection=$(python tools/changed_modules.py --base-ref "$BASE_REF")
-          echo "modules=$(python -c 'import json,sys; print(json.load(sys.stdin)["modules"])' <<< "$selection")" >> "$GITHUB_OUTPUT"
+          echo "modules=$(python -c 'import json,sys; print(json.dumps(json.load(sys.stdin)["modules"], separators=(",", ":")))' <<< "$selection")" >> "$GITHUB_OUTPUT"
           echo "full_rebuild=$(python -c 'import json,sys; print(str(json.load(sys.stdin)["fullRebuild"]).lower())' <<< "$selection")" >> "$GITHUB_OUTPUT"
 
   module-build:
